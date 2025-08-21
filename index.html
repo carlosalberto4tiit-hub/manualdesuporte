@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de Suporte Meu Pabx Cloud</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #1a252f;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #95a5a6;
+            --bot-bg: #dfe6e9;
+            --user-bg: #3498db;
+            --user-text: white;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            gap: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            height: 90vh;
+        }
+        
+        .config-panel {
+            width: 350px;
+            background: var(--dark);
+            color: white;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .config-panel.hidden {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+        
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .config-header i {
+            font-size: 28px;
+            color: var(--accent);
+        }
+        
+        .config-header h2 {
+            font-weight: 600;
+            font-size: 24px;
+        }
+        
+        .config-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 18px;
+        }
+        
+        .config-section h3 {
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .config-section h3 i {
+            color: var(--accent);
+        }
+        
+        .config-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-family: monospace;
+            resize: vertical;
+            outline: none;
+        }
+        
+        textarea:focus {
+            border-color: var(--accent);
+        }
+        
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .chat-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chat-header i {
+            font-size: 24px;
+        }
+        
+        .chat-header h1 {
+            font-weight: 600;
+            font-size: 22px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            animation: fadeIn 0.4s ease;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: var(--bot-bg);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: var(--user-bg);
+            color: var(--user-text);
+            border-bottom-right-radius: 5px;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .option-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .option-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .option-btn i {
+            font-size: 14px;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .input-container input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .input-container input:focus {
+            border-color: var(--accent);
+        }
+        
+        .input-container button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-left: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .input-container button:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            background: var(--bot-bg);
+            padding: 12px 20px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 2px;
+            background-color: #6c757d;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        .typing-indicator span:nth-of-type(1) {
+            animation: typing 1s infinite;
+        }
+        
+        .typing-indicator span:nth-of-type(2) {
+            animation: typing 1s infinite 0.2s;
+        }
+        
+        .typing-indicator span:nth-of-type(3) {
+            animation: typing 1s infinite 0.4s;
+        }
+        
+        @keyframes typing {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); opacity: 0.8; }
+            100% { transform: translateY(0px); opacity: 0.4; }
+        }
+        
+        .menu-path {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .menu-path i {
+            font-size: 12px;
+        }
+        
+        .info-panel {
+            background: #e7f5ff;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .info-panel h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .info-panel p {
+            font-size: 14px;
+            color: #495057;
+            line-height: 1.6;
+        }
+        
+        .info-panel code {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .history-item {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .code-info {
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+            margin-top: 10px;
+        }
+        
+        .code-header {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .code-description {
+            margin-bottom: 10px;
+        }
+        
+        .code-example {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        
+        .image-container {
+            max-width: 100%;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .image-caption {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .back-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .back-btn:hover {
+            background: #7f8c8d;
+        }
+        
+        .info-message {
+            background: #e1f5fe;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #039be5;
+            margin-top: 10px;
+        }
+        
+        .toggle-panel-btn {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-panel-btn.hidden {
+            display: none;
+        }
+        
+        .toggle-panel-btn:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-panel-btn" id="toggle-panel-btn" title="Mostrar/Ocultar painel de configuração">
+        <i class="fas fa-cogs"></i>
+    </button>
+    
+    <div class="container">
+        <div class="config-panel" id="config-panel">
+            <div class="config-header">
+                <i class="fas fa-cogs"></i>
+                <h2>Configuração do Chat</h2>
+            </div>
+            
+            <div class="config-section">
+                <h3><i class="fas fa-file-code"></i> Carregar Configuração</h3>
+                <div class="config-content">
+                    <textarea id="config-text" placeholder='Cole sua configuração JSON aqui...'></textarea>
+                    <button id="load-btn" class="btn">
+                        <i class="fas fa-sync-alt"></i> Carregar Configuração
+                    </button>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <h3><i class="fas fa-history"></i> Histórico de Configurações</h3>
+                <div class="config-content">
+                    <div class="history-item" onclick="loadSampleConfig('default')">Configuração Padrão</div>
+                    <div class="history-item" onclick="loadSampleConfig('suporte')">Suporte Técnico</div>
+                    <div class="history-item" onclick="loadSampleConfig('vendas')">Vendas</div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h4><i class="fas fa-lightbulb"></i> Como usar</h4>
+                <p>1. Defina sua configuração em JSON no campo acima</p>
+                <p>2. Clique em "Carregar Configuração"</p>
+                <p>3. Interaja com o chat usando os botões ou digitando</p>
+                <p>Use <code>"proximo": "nome_menu"</code> para definir os fluxos</p>
+            </div>
+            
+            <button class="btn btn-success">
+                <i class="fas fa-save"></i> Salvar Configuração
+            </button>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-comments"></i>
+                <h1>Meu Pabx Cloud - Suporte</h1>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    Olá! Sou o assistente virtual do Meu Pabx Cloud. Por favor, carregue uma configuração para começar.
+                    <div class="menu-path">
+                        <i class="fas fa-map-marker-alt"></i> Aguardando configuração
+                    </div>
+                </div>
+            </div>
+            
+            <div class="options-container" id="options-container">
+                </div>
+            
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Escreva sua mensagem...">
+                <button id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração completa traduzida para português (TODAS as opções mantidas)
+        const chatConfig = {
+            "menuInicial": {
+                "mensagem": "Bem-vindo ao Assistente Meu Pabx Cloud! Como posso ajudar?",
+                "opcoes": [
+                    {"texto": "📱 Introdução ao Meu Pabx Cloud", "proximo": "introducao"},
+                    {"texto": "🔑 Fazer Login", "proximo": "login"},
+                    {"texto": "📞 Chamadas e Mensagens", "proximo": "chamadas_mensagens"},
+                    {"texto": "👥 Gerenciar Filas", "proximo": "gerenciar_filas"},
+                    {"texto": "📲 Configurar Caller ID", "proximo": "callerid"},
+                    {"texto": "💬 SMS e WhatsApp", "proximo": "sms_whatsapp"},
+                    {"texto": "🖥️ Softphone", "proximo": "softphone"},
+                    {"texto": "🔢 Códigos de Função", "proximo": "codigos_funcao"},
+                    {"texto": "🆘 Suporte Técnico", "proximo": "suporte"}
+                ]
+            },
+            "introducao": {
+                "mensagem": "O Meu Pabx Cloud é a solução completa para as comunicações empresariais. Compatível apenas com o PABX Meu Pabx Cloud v22+. Principais funcionalidades:\n\n- Chamadas de voz/vídeo\n- Mensagens instantâneas\n- Caixa postal\n- Reuniões\n- Integração SMS/WhatsApp",
+                "opcoes": [
+                    {"texto": "⬇️ Baixar Aplicativo", "proximo": "download"},
+                    {"texto": "📱 Ver Telas do App", "proximo": "telas_app"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "telas_app": {
+                "mensagem": "Visão geral das principais telas do aplicativo:",
+                "opcoes": [
+                    {"texto": "💬 Chat/Mensagens", "proximo": "imagem:portsip-one-mobile-8.png"},
+                    {"texto": "📞 Histórico de Chamadas", "proximo": "imagem:portsip-one-mobile-9.png"},
+                    {"texto": "👥 Contatos", "proximo": "imagem:portsip-one-mobile-10.png"},
+                    {"texto": "🔢 Teclado", "proximo": "imagem:portsip-one-mobile-11.png"},
+                    {"texto": "📅 Reuniões", "proximo": "imagem:portsip-one-mobile-13.png"},
+                    {"texto": "⚡ Menu Rápido", "proximo": "imagem:portsip-one-mobile-15.png"},
+                    {"texto": "⚙️ Configurações", "proximo": "imagem:portsip-one-mobile-16.png"},
+                    {"texto": "↩️ Voltar", "proximo": "introducao"}
+                ]
+            },
+            "download": {
+                "mensagem": "Disponível para todas as plataformas:",
+                "opcoes": [
+                    {"texto": "💻 Windows Desktop", "proximo": "url:https://meupabxcloud.com/download"},
+                    {"texto": "🍎 iOS (App Store)", "proximo": "url:https://apps.apple.com/br/app/meu-pabx-cloud/id6740400840"},
+                    {"texto": "🤖 Android (Google Play)", "proximo": "url:https://play.google.com/store/apps/details?id=mobilecontrol.android.app.meupabxcloud"},
+                    {"texto": "🌐 WebRTC (Navegador)", "proximo": "url:https://meu-pabx-cloud.com:10443/"},
+                    {"texto": "↩️ Voltar", "proximo": "introducao"}
+                ]
+            },
+            "login": {
+                "mensagem": "Métodos de login disponíveis:",
+                "opcoes": [
+                    {"texto": "🔒 Login com QR Code", "proximo": "login_qr"},
+                    {"texto": "⌨️ Login Manual", "proximo": "login_manual"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "login_qr": {
+                "mensagem": "Procedimento para login com QR Code:\n\n1. Acesse o portal do PABX Meu Pabx Cloud\n2. Vá para Gerenciador de Chamadas > Usuários\n3. Clique no usuário e gere o QR Code\n4. No aplicativo móvel, toque no ícone da câmera\n5. Escaneie o código",
+                "opcoes": [
+                    {"texto": "👁️ Ver Exemplo de QR Code", "proximo": "imagem:user_qr1.png"},
+                    {"texto": "❓ Problemas com QR Code", "proximo": "suporte_qr"},
+                    {"texto": "↩️ Voltar", "proximo": "login"}
+                ]
+            },
+            "login_manual": {
+                "mensagem": "Login manual:\n\n1. Insira o domínio SIP (ex: suaempresa.io)\n2. Insira o endereço do PABX (IP ou domínio)\n3. Insira nome de usuário e senha\n4. Clique em Acessar",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Inserir Servidor", "proximo": "imagem:portsip-one-mobile-6.png"},
+                    {"texto": "👁️ Exemplo: Inserir Credenciais", "proximo": "imagem:portsip-one-mobile-7.png"},
+                    {"texto": "↩️ Voltar", "proximo": "login"}
+                ]
+            },
+            "chamadas_mensagens": {
+                "mensagem": "Funcionalidades de chamadas e mensagens:",
+                "opcoes": [
+                    {"texto": "📞 Fazer Chamadas", "proximo": "fazer_chamadas"},
+                    {"texto": "🔄 Transferir Chamadas", "proximo": "transferir_chamadas"},
+                    {"texto": "⏯️ Chamada em Espera", "proximo": "chamada_espera"},
+                    {"texto": "🅿️ Estacionar Chamada", "proximo": "estacionar_chamada"},
+                    {"texto": "📩 Caixa Postal", "proximo": "correio_voz"},
+                    {"texto": "👥 Mensagens de Equipe", "proximo": "mensagens_equipe"},
+                    {"texto": "📇 Contatos", "proximo": "contatos"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "fazer_chamadas": {
+                "mensagem": "Como fazer chamadas:\n\n1. Pelo teclado: Digite o número e clique em chamar\n2. Pelo contato: Acesse os contatos e clique no ícone de chamada\n3. Pelo histórico: Clique em uma chamada recente para ligar de volta\n4. Pela conversa: Em uma conversa, clique no ícone de chamada",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Teclado", "proximo": "imagem:portsip-one-mobile-11.png"},
+                    {"texto": "👁️ Exemplo: Chamada pelo Contato", "proximo": "imagem:portsip-one-mobile-17.png"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "transferir_chamadas": {
+                "mensagem": "Tipos de transferência:\n\n1. Cega: Transfere diretamente sem consulta\n2. Assistida: Consulta antes de transferir\n3. Para a Caixa Postal: Transfere diretamente para a caixa postal",
+                "opcoes": [
+                    {"texto": "🔄 Transferência Cega", "proximo": "imagem:portsip-one-mobile-18.png"},
+                    {"texto": "🔄 Transferência Assistida", "proximo": "imagem:portsip-one-mobile-19.png"},
+                    {"texto": "📩 Para a Caixa Postal", "proximo": "transferir_voicemail"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "transferir_voicemail": {
+                "mensagem": "Transferir para a caixa postal:\n\n1. Durante uma chamada, toque em Transferir\n2. Selecione 'Transferir para a Caixa Postal'\n3. Escolha o contato\n4. A chamada será transferida diretamente para a caixa postal",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "transferir_chamadas"}
+                ]
+            },
+            "chamada_espera": {
+                "mensagem": "Colocar chamada em espera:\n\n1. Durante uma chamada, toque em 'Espera'\n2. O cliente ouvirá música de espera\n3. Toque novamente para retomar",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "estacionar_chamada": {
+                "mensagem": "Estacionar chamada:\n\n1. Direto: Para um colega específico\n2. Grupo: Para um grupo de atendimento\n\nDurante a chamada:\n1. Toque em Transferir\n2. Selecione 'Estacionar' ou 'Estacionar em Grupo'",
+                "opcoes": [
+                    {"texto": "👁️ Estacionamento Direto", "proximo": "imagem:portsip-one-mobile-20.png"},
+                    {"texto": "👁️ Estacionamento em Grupo", "proximo": "imagem:portsip-one-mobile-21.png"},
+                    {"texto": "👁️ Recuperar Chamada", "proximo": "imagem:portsip-one-mobile-22.png"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "correio_voz": {
+                "mensagem": "Acessar a caixa postal:\n\n1. Abra a aba Mensagens\n2. Selecione 'Caixa Postal'\n3. Toque na mensagem para ouvir",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Caixa Postal", "proximo": "imagem:portsip-one-mobile-23.png"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "mensagens_equipe": {
+                "mensagem": "Mensagens de equipe:\n\n- Conversas individuais\n- Grupos de mensagens\n- Compartilhamento de arquivos",
+                "opcoes": [
+                    {"texto": "📤 Enviar Mensagem", "proximo": "enviar_mensagem"},
+                    {"texto": "👥 Criar Grupo", "proximo": "criar_grupo"},
+                    {"texto": "👁️ Exemplo: Mensagens", "proximo": "imagem:portsip-one-mobile-28.png"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "enviar_mensagem": {
+                "mensagem": "Enviar mensagem:\n\n1. Pelo contato: Acesse o contato e toque no ícone de mensagem\n2. Pelo menu: Na aba Mensagens, toque em '+' e selecione 'Criar mensagem'",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "mensagens_equipe"}
+                ]
+            },
+            "criar_grupo": {
+                "mensagem": "Criar grupo de mensagens:\n\n1. Na aba Mensagens, toque em '+'\n2. Selecione 'Criar grupo'\n3. Dê um nome ao grupo\n4. Adicione membros\n5. Toque em Criar",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Criar Grupo", "proximo": "imagem:portsip-one-mobile-29.png"},
+                    {"texto": "↩️ Voltar", "proximo": "mensagens_equipe"}
+                ]
+            },
+            "contatos": {
+                "mensagem": "Gerenciar contatos:",
+                "opcoes": [
+                    {"texto": "➕ Adicionar Contato", "proximo": "adicionar_contato"},
+                    {"texto": "⭐ Adicionar Favorito", "proximo": "adicionar_favorito"},
+                    {"texto": "👁️ Exemplo: Contatos", "proximo": "imagem:portsip-one-mobile-24.png"},
+                    {"texto": "↩️ Voltar", "proximo": "chamadas_mensagens"}
+                ]
+            },
+            "adicionar_contato": {
+                "mensagem": "Adicionar contato:\n\n1. Abra a aba Contatos\n2. Toque em '+' no topo\n3. Preencha as informações\n4. Escolha 'Empresa' ou 'Pessoal'\n5. Toque em Salvar",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Adicionar", "proximo": "imagem:portsip-one-mobile-25.png"},
+                    {"texto": "↩️ Voltar", "proximo": "contatos"}
+                ]
+            },
+            "adicionar_favorito": {
+                "mensagem": "Adicionar favorito:\n\n1. Abra os detalhes do contato\n2. Toque na estrela no topo\n3. A estrela ficará amarela\n\nPara remover: Toque na estrela novamente",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Favoritos", "proximo": "imagem:portsip-one-mobile-26.png"},
+                    {"texto": "👁️ Exemplo: Favorito Adicionado", "proximo": "imagem:portsip-one-mobile-27.png"},
+                    {"texto": "↩️ Voltar", "proximo": "contatos"}
+                ]
+            },
+            "gerenciar_filas": {
+                "mensagem": "Gerenciamento de filas de chamada:",
+                "opcoes": [
+                    {"texto": "🔄 Mudar Status", "proximo": "mudar_status"},
+                    {"texto": "🔌 Entrar/Sair das Filas", "proximo": "entrar_sair_filas"},
+                    {"texto": "👁️ Exemplo: Ícone de Filas", "proximo": "imagem:portsip-one-mobile-28.png"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "mudar_status": {
+                "mensagem": "Mudar status na fila:\n\n1. Toque no ícone de filas (no topo)\n2. Selecione o novo status\n3. O status será aplicado a todas as filas",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Status Disponíveis", "proximo": "imagem:portsip-one-mobile-30.png"},
+                    {"texto": "↩️ Voltar", "proximo": "gerenciar_filas"}
+                ]
+            },
+            "entrar_sair_filas": {
+                "mensagem": "Entrar/sair das filas:\n\n1. Toque no ícone de filas\n2. Na lista de filas, ative/desative o interruptor\n3. O status será aplicado apenas para a fila selecionada",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Lista de Filas", "proximo": "imagem:portsip-one-mobile-29.png"},
+                    {"texto": "👁️ Exemplo: Filas Ativas", "proximo": "imagem:portsip-one-mobile-29.png"},
+                    {"texto": "↩️ Voltar", "proximo": "gerenciar_filas"}
+                ]
+            },
+            "callerid": {
+                "mensagem": "Personalizar Caller ID:",
+                "opcoes": [
+                    {"texto": "🆔 Configurar Caller ID", "proximo": "config_callerid"},
+                    {"texto": "🚫 Ocultar Número", "proximo": "ocultar_numero"},
+                    {"texto": "🤖 Usar Padrão do PABX", "proximo": "padrao_pbx"},
+                    {"texto": "👁️ Exemplo: Teclado", "proximo": "imagem:portsip-one-mobile-30.png"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "config_callerid": {
+                "mensagem": "Configurar Caller ID:\n\n1. No teclado, toque em 'Chamar como'\n2. Selecione o número desejado\n3. Chame normalmente",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "callerid"}
+                ]
+            },
+            "ocultar_numero": {
+                "mensagem": "Ocultar número:\n\n1. No teclado, toque em 'Chamar como'\n2. Selecione 'Ocultar número'\n3. Digite o número",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Ocultar Número", "proximo": "imagem:portsip-one-mobile-31.png"},
+                    {"texto": "↩️ Voltar", "proximo": "callerid"}
+                ]
+            },
+            "padrao_pbx": {
+                "mensagem": "Usar padrão do PABX:\n\n1. No teclado, toque em 'Chamar como'\n2. Selecione 'Caller ID do servidor'\n3. O PABX determinará automaticamente o Caller ID",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Padrão do PABX", "proximo": "imagem:portsip-one-mobile-32.png"},
+                    {"texto": "↩️ Voltar", "proximo": "callerid"}
+                ]
+            },
+            "sms_whatsapp": {
+                "mensagem": "Mensagens SMS e WhatsApp:",
+                "opcoes": [
+                    {"texto": "📨 Configurar SMS", "proximo": "config_sms"},
+                    {"texto": "💚 Configurar WhatsApp", "proximo": "config_whatsapp"},
+                    {"texto": "💬 Usar SMS/WhatsApp", "proximo": "usar_sms_whatsapp"},
+                    {"texto": "👁️ Exemplo: Mensagens", "proximo": "imagem:portsip-one-mobile-28.png"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "config_sms": {
+                "mensagem": "Configurar SMS:\n\n1. O administrador deve configurar um provedor de tronco compatível\n2. Lista de provedores suportados:\n   - Twilio\n   - Vonage\n   - Bandwidth\n   - ... (veja a lista completa no manual)",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "sms_whatsapp"}
+                ]
+            },
+            "config_whatsapp": {
+                "mensagem": "Configurar WhatsApp:\n\n1. O administrador deve integrar com a API do WhatsApp Business\n2. Configurar fluxos de atendimento\n3. Atribuir aos agentes",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "sms_whatsapp"}
+                ]
+            },
+            "usar_sms_whatsapp": {
+                "mensagem": "Usar SMS/WhatsApp:\n\n1. Abra a aba Mensagens\n2. Selecione SMS ou WhatsApp\n3. Toque em '+' para uma nova conversa\n4. Selecione contato ou número\n5. Envie mensagens, arquivos, localização",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "sms_whatsapp"}
+                ]
+            },
+            "softphone": {
+                "mensagem": "Configurações do Softphone:",
+                "opcoes": [
+                    {"texto": "📱 Registrar via QR Code", "proximo": "softphone_qr"},
+                    {"texto": "⌨️ Registrar Manualmente", "proximo": "softphone_manual"},
+                    {"texto": "🔌 Configurar Proxy", "proximo": "config_proxy"},
+                    {"texto": "👁️ Exemplo: Desktop", "proximo": "imagem:portsip_desktop1.png"},
+                    {"texto": "👁️ Exemplo: Mobile", "proximo": "imagem:portsip_iphone_1.png"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "softphone_qr": {
+                "mensagem": "Registrar via QR Code:\n\n1. No portal Meu Pabx Cloud, gere o QR Code do usuário\n2. No softphone, selecione a opção para escanear\n3. Aponte a câmera para o QR Code\n4. O registro ocorrerá automaticamente",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: QR Code", "proximo": "imagem:user_qr1.png"},
+                    {"texto": "↩️ Voltar", "proximo": "softphone"}
+                ]
+            },
+            "softphone_manual": {
+                "mensagem": "Registro manual:\n\n- Nome de usuário: ramal\n- Senha: senha do ramal\n- Domínio: domínio SIP do tenant\n- Servidor Proxy: IP público/privado do PABX\n- Porta: conforme transporte (ex: 5060 para UDP)\n- Transporte: UDP, TCP, TLS, WSS",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Configurações", "proximo": "imagem:portsip_desktop2.png"},
+                    {"texto": "↩️ Voltar", "proximo": "softphone"}
+                ]
+            },
+            "config_proxy": {
+                "mensagem": "Configurar Proxy:\n\n- Para internet: use IP público ou domínio\n- Para LAN: use IP privado\n- Porta: depende do transporte (ex: 5063 para TCP)\n\nImportante: Não defina a porta para o domínio SIP",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "softphone"}
+                ]
+            },
+            "codigos_funcao": {
+                "mensagem": "Códigos de Acesso a Funcionalidades (\"Códigos Estrela\"):",
+                "opcoes": [
+                    {"texto": "🔄 Encaminhamento de Chamadas", "proximo": "encaminhamento_chamadas"},
+                    {"texto": "⏯️ Chamada em Espera/Retomada", "proximo": "espera_recuperacao"},
+                    {"texto": "📞 Identificação de Chamadas", "proximo": "identificacao_chamadas"},
+                    {"texto": "⏺️ Gravação de Chamadas", "proximo": "gravacao_chamadas"},
+                    {"texto": "📲 Transferência de Chamadas", "proximo": "transferencia_chamadas"},
+                    {"texto": "📩 Caixa Postal", "proximo": "correio_voz_codigos"},
+                    {"texto": "👂 Monitoramento", "proximo": "monitoramento"},
+                    {"texto": "🔕 Não Perturbe", "proximo": "nao_perturbe"},
+                    {"texto": "📞 Discagem Rápida", "proximo": "chamada_rapida"},
+                    {"texto": "👤 Chamadas Anônimas", "proximo": "chamadas_anonimas"},
+                    {"texto": "📞 Ponte/Retorno de Chamada", "proximo": "ponte_richiamata"},
+                    {"texto": "👥 Agentes de Fila", "proximo": "agentes_fila"},
+                    {"texto": "💼 Hot Desking", "proximo": "hot_desking"},
+                    {"texto": "🔄 Outras Funções", "proximo": "outras_funcoes"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "encaminhamento_chamadas": {
+                "mensagem": "Códigos de Encaminhamento de Chamadas:",
+                "opcoes": [
+                    {"texto": "*72 - Encaminhar Sempre Ativo", "proximo": "info:*72|Encaminha todas as chamadas para outro número|Ex: *7212345678#"},
+                    {"texto": "*73 - Desativar Encaminhar Sempre", "proximo": "info:*73|Desabilita o encaminhamento de chamadas sempre ativo"},
+                    {"texto": "*90 - Encaminhar se Ocupado", "proximo": "info:*90|Encaminha quando ocupado|Ex: *9012345678"},
+                    {"texto": "*92 - Encaminhar se Não Atender", "proximo": "info:*92|Encaminha quando não atende|Ex: *9212345678#"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "espera_recuperacao": {
+                "mensagem": "Códigos de Espera e Retomada:",
+                "opcoes": [
+                    {"texto": "*68 - Estacionar Chamada", "proximo": "info:*68|Estaciona uma chamada|Ex: Transferir para *68"},
+                    {"texto": "*58 - Estacionar em Grupo", "proximo": "info:*58|Estaciona em um grupo|Ex: Transferir para *58#"},
+                    {"texto": "*88 - Recuperar Chamada", "proximo": "info:*88|Recupera chamada estacionada|Ex: *88#"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "identificacao_chamadas": {
+                "mensagem": "Códigos de ID de Chamada:",
+                "opcoes": [
+                    {"texto": "*31 - Ocultar ID Sempre", "proximo": "info:*31|Oculta sempre o ID de chamada"},
+                    {"texto": "*65 - Mostrar ID por Chamada", "proximo": "info:*65|Mostra o ID por chamada|Ex: *6512345678"},
+                    {"texto": "*67 - Ocultar ID por Chamada", "proximo": "info:*67|Oculta o ID por chamada|Ex: *6712345678"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "gravacao_chamadas": {
+                "mensagem": "Códigos de Gravação:",
+                "opcoes": [
+                    {"texto": "*44 - Iniciar Gravação", "proximo": "info:*44|Inicia a gravação da chamada"},
+                    {"texto": "*45 - Parar Gravação", "proximo": "info:*45|Interrompe a gravação"},
+                    {"texto": "*48 - Pausar Gravação", "proximo": "info:*48|Pausa a gravação"},
+                    {"texto": "*49 - Retomar Gravação", "proximo": "info:*49|Retoma a gravação"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "transferencia_chamadas": {
+                "mensagem": "Códigos de Transferência:",
+                "opcoes": [
+                    {"texto": "*54 - Transferir Chamada", "proximo": "info:*54|Transfere a chamada|Ex: *54123456#"},
+                    {"texto": "*55 - Transferir para Caixa Postal", "proximo": "info:*55|Transfere para a caixa postal|Ex: *55103"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "correio_voz_codigos": {
+                "mensagem": "Códigos de Caixa Postal:",
+                "opcoes": [
+                    {"texto": "*56 - Caixa Postal Compartilhada", "proximo": "info:*56|Acessar VM compartilhada|Ex: *56[numero]"},
+                    {"texto": "*57 - Acessar Caixa Postal", "proximo": "info:*57|Acessa sua caixa postal"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "monitoramento": {
+                "mensagem": "Códigos de Monitoramento:",
+                "opcoes": [
+                    {"texto": "*63 - Monitoramento Silencioso", "proximo": "info:*63|Monitora a chamada|Ex: *63102"},
+                    {"texto": "*97 - Captura Direta", "proximo": "info:*97|Atende a chamada de outro"},
+                    {"texto": "*98 - Captura de Grupo", "proximo": "info:*98|Atende a chamadas de grupo"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "nao_perturbe": {
+                "mensagem": "Códigos Não Perturbe:",
+                "opcoes": [
+                    {"texto": "*78 - Ativar Não Perturbe", "proximo": "info:*78|Ativa Não Perturbe"},
+                    {"texto": "*79 - Desativar Não Perturbe", "proximo": "info:*79|Desativa Não Perturbe"},
+                    {"texto": "*77 - Rejeitar Anônimos", "proximo": "info:*77|Rejeita chamadas anônimas"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "chamada_rapida": {
+                "mensagem": "Códigos de Discagem Rápida:",
+                "opcoes": [
+                    {"texto": "*74 - Discagem Rápida (1 dígito)", "proximo": "info:*74|Configura atalho|Ex: *74512345"},
+                    {"texto": "*75 - Discagem Rápida (2 dígitos)", "proximo": "info:*75|Configura atalho|Ex: *750612345678"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "chamadas_anonimas": {
+                "mensagem": "Códigos de Chamadas Anônimas:",
+                "opcoes": [
+                    {"texto": "*76 - Ativar Anônimo Sempre", "proximo": "info:*76|Chamadas sempre anônimas"},
+                    {"texto": "*52 - Ativar Anônimo por Chamada", "proximo": "info:*52|Anônimo por uma chamada|Ex: *5212345678"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "ponte_richiamata": {
+                "mensagem": "Códigos de Ponte/Retorno de Chamada:",
+                "opcoes": [
+                    {"texto": "*15 - Ponte de Chamada", "proximo": "info:*15|Junte-se a uma ponte"},
+                    {"texto": "*33 - Retorno de Chamada Automático", "proximo": "info:*33|Avisa quando a linha estiver livre"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "agentes_fila": {
+                "mensagem": "Códigos para Agentes de Fila:",
+                "opcoes": [
+                    {"texto": "*36 - Status Pronto", "proximo": "info:*36|Agente pronto|Ex: *368000"},
+                    {"texto": "*37 - Status Não Pronto", "proximo": "info:*37|Agente não pronto|Ex: *378000"},
+                    {"texto": "*38 - Entrar na Fila", "proximo": "info:*38|Acessa a fila|Ex: *388000"},
+                    {"texto": "*39 - Sair da Fila", "proximo": "info:*39|Sai da fila|Ex: *398000"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "hot_desking": {
+                "mensagem": "Códigos de Hot Desking:",
+                "opcoes": [
+                    {"texto": "*70 - Login Hot Desking", "proximo": "info:*70|Acessa o dispositivo|Ex: *70100"},
+                    {"texto": "*71 - Logout Hot Desking", "proximo": "info:*71|Sai do dispositivo"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "outras_funcoes": {
+                "mensagem": "Outros Códigos:",
+                "opcoes": [
+                    {"texto": "*69 - Última Chamada Recebida", "proximo": "info:*69|Retorna a última chamada"},
+                    {"texto": "*66 - Rediscar", "proximo": "info:*66|Redisca o último número"},
+                    {"texto": "*11 - Call Flip", "proximo": "info:*11|Transfere chamada entre dispositivos"},
+                    {"texto": "*12 - Encerrar Chamadas", "proximo": "info:*12|Encerra todas as chamadas"},
+                    {"texto": "↩️ Voltar", "proximo": "codigos_funcao"}
+                ]
+            },
+            "suporte": {
+                "mensagem": "Suporte Técnico:",
+                "opcoes": [
+                    {"texto": "🔒 Problemas de Login", "proximo": "suporte_login"},
+                    {"texto": "📞 Problemas de Chamadas", "proximo": "suporte_chamadas"},
+                    {"texto": "👥 Contatar Suporte", "proximo": "contato_suporte"},
+                    {"texto": "↩️ Voltar", "proximo": "menuInicial"}
+                ]
+            },
+            "suporte_login": {
+                "mensagem": "Problemas comuns de login:\n\n1. Verifique nome de usuário e senha\n2. Verifique o domínio SIP e o endereço do PABX\n3. Verifique a conexão com a internet\n4. Se usar QR Code, certifique-se de que é válido",
+                "opcoes": [
+                    {"texto": "❓ QR Code não funciona", "proximo": "suporte_qr"},
+                    {"texto": "📞 Chamar Suporte", "proximo": "contato_suporte"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte"}
+                ]
+            },
+            "suporte_qr": {
+                "mensagem": "Problemas com QR Code:\n\n1. Gere um novo QR Code no PABX\n2. Certifique-se de que a câmera funciona\n3. Verifique se o QR Code não expirou\n4. Tente em um ambiente bem iluminado",
+                "opcoes": [
+                    {"texto": "👁️ Ver Exemplo de QR Code", "proximo": "imagem:user_qr1.png"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte_login"}
+                ]
+            },
+            "suporte_chamadas": {
+                "mensagem": "Problemas com as chamadas:\n\n1. Verifique a conexão com a internet\n2. Verifique se o microfone e o alto-falante funcionam\n3. Certifique-se de não estar em modo avião\n4. Verifique se o PABX está acessível",
+                "opcoes": [
+                    {"texto": "📞 Sem áudio", "proximo": "suporte_audio"},
+                    {"texto": "📞 Chamadas não chegam", "proximo": "suporte_chamadas_entrantes"},
+                    {"texto": "📞 Chamadas não saem", "proximo": "suporte_chamadas_uscenti"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte"}
+                ]
+            },
+            "suporte_audio": {
+                "mensagem": "Problemas de áudio:\n\n1. Verifique se o app tem permissões de microfone\n2. Tente com fones de ouvido diferentes\n3. Verifique o volume do dispositivo\n4. Reinicie o aplicativo",
+                "opcoes": [
+                    {"texto": "👁️ Configurações de Áudio", "proximo": "imagem:portsip-one-mobile-33.png"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte_chamadas"}
+                ]
+            },
+            "suporte_chamadas_entrantes": {
+                "mensagem": "Chamadas recebidas não funcionando:\n\n1. Verifique o status da conta\n2. Verifique as regras de encaminhamento\n3. Certifique-se de não estar em 'Não Perturbe'\n4. Verifique se a fila está ativa",
+                "opcoes": [
+                    {"texto": "👁️ Status da Conta", "proximo": "imagem:portsip-one-mobile-34.png"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte_chamadas"}
+                ]
+            },
+            "suporte_chamadas_uscenti": {
+                "mensagem": "Chamadas efetuadas não funcionando:\n\n1. Verifique se o número está correto\n2. Verifique as restrições do PABX\n3. Certifique-se de ter crédito (se aplicável)\n4. Tente ligar para um número interno",
+                "opcoes": [
+                    {"texto": "👁️ Exemplo: Chamada", "proximo": "imagem:portsip-one-mobile-35.png"},
+                    {"texto": "↩️ Voltar", "proximo": "suporte_chamadas"}
+                ]
+            },
+            "contato_suporte": {
+                "mensagem": "Contate nosso suporte:\n\n📞 07366110\n✉️ support@meupabxcloud.com",
+                "opcoes": [
+                    {"texto": "↩️ Voltar", "proximo": "suporte"}
+                ]
+            }
+        };
+
+        // Estado do chat
+        let currentConfig = { ...chatConfig };
+        let currentMenu = "menuInicial";
+        let chatHistory = [];
+        let messageQueue = [];
+        let isTyping = false;
+        
+        // Elementos DOM
+        const chatMessages = document.getElementById('chat-messages');
+        const optionsContainer = document.getElementById('options-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const configText = document.getElementById('config-text');
+        const loadBtn = document.getElementById('load-btn');
+        const configPanel = document.getElementById('config-panel');
+        const togglePanelBtn = document.getElementById('toggle-panel-btn');
+        
+        // Funções
+        function initChat() {
+            // Verifica se deve ocultar o painel por padrão
+            const urlParams = new URLSearchParams(window.location.search);
+            const hidePanel = urlParams.get('hidePanel') !== 'true';
+            
+            if (hidePanel) {
+                configPanel.classList.add('hidden');
+                togglePanelBtn.classList.add('hidden');
+            }
+            
+            showMenu(currentMenu);
+            
+            // Event listeners
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            loadBtn.addEventListener('click', loadConfig);
+            togglePanelBtn.addEventListener('click', toggleConfigPanel);
+            
+            // Carrega configuração padrão
+            configText.value = JSON.stringify(chatConfig, null, 2);
+        }
+        
+        function toggleConfigPanel() {
+            configPanel.classList.toggle('hidden');
+            togglePanelBtn.classList.toggle('hidden');
+        }
+        
+        function loadConfig() {
+            try {
+                const config = JSON.parse(configText.value);
+                currentConfig = config;
+                currentMenu = Object.keys(currentConfig)[0];
+                chatMessages.innerHTML = '';
+                showMenu(currentMenu);
+                addMessage("Configuração carregada com sucesso!", 'bot');
+            } catch (error) {
+                addMessage("Erro ao carregar a configuração: " + error.message, 'bot');
+            }
+        }
+        
+        function loadSampleConfig(type) {
+            // Simula o carregamento de uma configuração de exemplo
+            addMessage(`Carregando configuração ${type}...`, 'bot');
+            setTimeout(() => {
+                configText.value = JSON.stringify(chatConfig, null, 2);
+                addMessage("Configuração de exemplo carregada. Clique em 'Carregar Configuração' para aplicar.", 'bot');
+            }, 1000);
+        }
+        
+        function showMenu(menuId) {
+            const menu = currentConfig[menuId];
+            if (!menu) {
+                addMessage(`Menu "${menuId}" não encontrado na configuração.`, 'bot');
+                return;
+            }
+            
+            currentMenu = menuId;
+            
+            // Adiciona a mensagem do menu
+            addMessage(menu.mensagem, 'bot', menuId);
+            
+            // Renderiza as opções
+            renderOptions(menu.opcoes);
+        }
+        
+        function renderOptions(options) {
+            optionsContainer.innerHTML = '';
+            
+            if (options && options.length > 0) {
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    
+                    if (option.icone) {
+                        const icon = document.createElement('i');
+                        icon.className = option.icone;
+                        button.appendChild(icon);
+                    }
+                    
+                    button.appendChild(document.createTextNode(option.texto));
+                    button.onclick = () => {
+                        addMessage(option.texto, 'user');
+                        simulateTyping(() => {
+                            handleOptionSelect(option.proximo);
+                        });
+                    };
+                    optionsContainer.appendChild(button);
+                });
+            } else {
+                // Se não houver opções, foca no campo de entrada
+                userInput.focus();
+            }
+        }
+        
+        function handleOptionSelect(next) {
+            if (next.startsWith("url:")) {
+                // Abre URL externa
+                const url = next.substring(4);
+                window.open(url, '_blank');
+            } 
+            else if (next.startsWith("imagem:")) {
+                // Mostra imagem
+                const imageName = next.substring(7);
+                showImagePlaceholder(imageName);
+            } 
+            else if (next.startsWith("info:")) {
+                // Mostra informação de código
+                const parts = next.substring(5).split('|');
+                showCodeInfo(parts[0], parts[1], parts[2]);
+            }
+            else {
+                // Navega para outro menu
+                showMenu(next);
+            }
+        }
+        
+        function showCodeInfo(code, description, example) {
+            let message = `
+                <div class="code-info">
+                    <div class="code-header">${code}</div>
+                    <div class="code-description">${description}</div>
+            `;
+            
+            if (example) {
+                message += `<div class="code-example">${example}</div>`;
+            }
+            
+            message += `</div>`;
+            
+            // Botão para voltar
+            message += `<button class="back-btn" onclick="simulateTyping(() => { showMenu('${currentMenu}'); })">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>`;
+            
+            // Limpa e mostra
+            chatMessages.innerHTML = '';
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            messageDiv.innerHTML = message;
+            chatMessages.appendChild(messageDiv);
+            
+            // Limpa opções
+            optionsContainer.innerHTML = '';
+        }
+        
+        function showImagePlaceholder(imageName) {
+            const message = `
+                <div class="image-container">
+                    <div class="info-message">
+                        <i class="fas fa-info-circle"></i> A imagem "${imageName}" seria exibida aqui
+                    </div>
+                    <button class="back-btn" onclick="simulateTyping(() => { showMenu('${currentMenu}'); })">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                </div>
+            `;
+            
+            // Limpa e mostra
+            chatMessages.innerHTML = '';
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            messageDiv.innerHTML = message;
+            chatMessages.appendChild(messageDiv);
+            
+            // Limpa opções
+            optionsContainer.innerHTML = '';
+        }
+        
+        function addMessage(text, sender, menuId = null) {
+            // Se já estiver digitando, adiciona à fila
+            if (isTyping && sender === 'bot') {
+                messageQueue.push({text, sender, menuId});
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            // Adiciona texto com quebras de linha
+            const lines = text.split('\n');
+            lines.forEach((line, index) => {
+                messageDiv.appendChild(document.createTextNode(line));
+                if (index < lines.length - 1) {
+                    messageDiv.appendChild(document.createElement('br'));
+                }
+            });
+            
+            // Adiciona o caminho do menu
+            if (sender === 'bot' && menuId) {
+                const pathDiv = document.createElement('div');
+                pathDiv.className = 'menu-path';
+                pathDiv.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${menuId}`;
+                messageDiv.appendChild(pathDiv);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Rola para a última mensagem
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Salva no histórico
+            chatHistory.push({
+                sender,
+                text,
+                timestamp: new Date().toISOString(),
+                menuId
+            });
+        }
+        
+        function simulateTyping(callback) {
+            isTyping = true;
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simula tempo de digitação (1-3s)
+            const typingTime = 1000 + Math.random() * 2000;
+            
+            setTimeout(() => {
+                chatMessages.removeChild(typingDiv);
+                isTyping = false;
+                callback();
+                
+                // Processa mensagens na fila
+                if (messageQueue.length > 0) {
+                    const nextMessage = messageQueue.shift();
+                    addMessage(nextMessage.text, nextMessage.sender, nextMessage.menuId);
+                }
+            }, typingTime);
+        }
+        
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            userInput.value = '';
+            
+            // Resposta do bot para mensagens de texto livre
+            simulateTyping(() => {
+                addMessage("Entendi sua mensagem. Para uma melhor assistência, por favor, selecione uma das opções do menu.", 'bot');
+                showMenu(currentMenu);
+            });
+        }
+        
+        // Inicia o chat quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', initChat);
+        
+        // Função global para simular digitação
+        window.simulateTyping = simulateTyping;
+    </script>
+</body>
+</html>
